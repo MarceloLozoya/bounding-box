@@ -1,6 +1,6 @@
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.util.*;
+import java.util.stream.Collectors;
 
 class BoundingBox {
 
@@ -12,6 +12,8 @@ class BoundingBox {
 
 		List<String> inputLines = getFileLines();
 
+//		parseData(inputLines);
+
 		if (inputLines.size() > 0) {
 			build2dGrid(inputLines);
 			exitCode = processGrid();
@@ -21,7 +23,34 @@ class BoundingBox {
     }
 
 
+	private static void parseData(List<String> inputLines) throws FileNotFoundException, UnsupportedEncodingException {
+		List<String> errorList = new ArrayList<>();
 
+		PrintWriter writer = new PrintWriter("dataset_updates.sql", "UTF-8");
+
+		for (String line : inputLines) {
+			List<String> list = Arrays.stream(line.split("\t")).collect(Collectors.toList());
+
+			if (!list.get(0).isEmpty() && !list.get(2).isEmpty() && !list.get(4).isEmpty()) {
+				String updateStatement = String.format("UPDATE FBO SET airopsGuid = \"%s\" WHERE shortCode = \"%s\" AND airportCode = \"%s\";", list.get(4), list.get(0), list.get(2));
+				writer.println(updateStatement);
+			} else {
+				errorList.add(line);
+			}
+
+		}
+
+		writer.close();
+
+		if (errorList.size() > 0) {
+			System.out.println();
+			System.out.println();
+			System.out.println("-------- ERROR LIST ["+errorList.size()+"] ------");
+			System.out.println();
+
+			errorList.forEach(System.out::println);
+		}
+	}
 
 
 	/**
